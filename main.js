@@ -1,6 +1,7 @@
-// Crear partículas retro
+// Crear partículas retro mejoradas
 function createParticles() {
     const particlesContainer = document.createElement('div');
+    particlesContainer.id = 'particles-container';
     particlesContainer.style.position = 'fixed';
     particlesContainer.style.top = '0';
     particlesContainer.style.left = '0';
@@ -8,37 +9,89 @@ function createParticles() {
     particlesContainer.style.height = '100%';
     particlesContainer.style.pointerEvents = 'none';
     particlesContainer.style.zIndex = '-1';
+    particlesContainer.style.overflow = 'hidden';
     document.body.appendChild(particlesContainer);
 
-    for (let i = 0; i < 20; i++) {
-        setTimeout(() => {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + 'vw';
-            particle.style.animationDelay = Math.random() * 6 + 's';
-            particle.style.background = ['#0ff', '#f0f', '#ff0'][Math.floor(Math.random() * 3)];
-            particlesContainer.appendChild(particle);
-        }, i * 300);
+    // Colores de los 80s
+    const colors = ['#ff0080', '#4deeea', '#ffe700', '#74ee15', '#ff6bce', '#00f5ff', '#ff69b4', '#ffd700'];
+    
+    // Crear más partículas para mejor efecto
+    for (let i = 0; i < 50; i++) {
+        createParticle(particlesContainer, colors, i);
     }
 }
 
-// // Script para crear partículas retro (agregar al final del script existente)
-// function createRetroParticles() {
-//     const colors = ['#0ff', '#f0f', '#ff0', '#0f0', '#f00'];
-//     for (let i = 0; i < 25; i++) {
-//         setTimeout(() => {
-//             const particle = document.createElement('div');
-//             particle.className = 'particle';
-//             particle.style.left = Math.random() * 100 + 'vw';
-//             particle.style.animationDelay = Math.random() * 8 + 's';
-//             particle.style.animationDuration = (3 + Math.random() * 7) + 's';
-//             particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-//             particle.style.width = (2 + Math.random() * 6) + 'px';
-//             particle.style.height = particle.style.width;
-//             document.body.appendChild(particle);
-//         }, i * 200);
-//     }
-// }
+function createParticle(container, colors, index) {
+    setTimeout(() => {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Tamaño aleatorio
+        const size = Math.random() * 8 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        
+        // Posición inicial aleatoria
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.top = Math.random() * 100 + 'vh';
+        
+        // Color aleatorio de la paleta 80s
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Animación personalizada
+        const duration = 10 + Math.random() * 20;
+        const delay = Math.random() * 5;
+        
+        particle.style.animation = `
+            float ${duration}s ease-in-out ${delay}s infinite
+        `;
+        
+        // Forma aleatoria (círculo, cuadrado, triángulo)
+        const shapes = ['circle', 'square', 'triangle'];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        
+        if (shape === 'circle') {
+            particle.style.borderRadius = '50%';
+        } else if (shape === 'triangle') {
+            particle.style.width = '0';
+            particle.style.height = '0';
+            particle.style.background = 'transparent';
+            particle.style.borderLeft = size/2 + 'px solid transparent';
+            particle.style.borderRight = size/2 + 'px solid transparent';
+            particle.style.borderBottom = size + 'px solid ' + colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        container.appendChild(particle);
+        
+        // Reiniciar partícula cuando termine la animación
+        particle.addEventListener('animationiteration', () => {
+            resetParticle(particle, colors);
+        });
+        
+    }, index * 100);
+}
+
+function resetParticle(particle, colors) {
+    // Nueva posición aleatoria
+    particle.style.left = Math.random() * 100 + 'vw';
+    particle.style.top = Math.random() * 100 + 'vh';
+    
+    // Nuevo color ocasionalmente
+    if (Math.random() > 0.7) {
+        if (particle.style.borderBottom) {
+            // Es un triángulo
+            particle.style.borderBottomColor = colors[Math.floor(Math.random() * colors.length)];
+        } else {
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        }
+    }
+    
+    // Nueva duración de animación ocasionalmente
+    if (Math.random() > 0.8) {
+        const duration = 10 + Math.random() * 20;
+        particle.style.animationDuration = duration + 's';
+    }
+}
 
 // Word database by category
 const wordDatabase = {
@@ -161,11 +214,9 @@ const progressBar = document.getElementById('progress-bar');
 const categoryButtons = document.querySelectorAll('.category-btn');
 const timerDisplay = document.getElementById('timer');
 
-// Inicializar partículas
-createParticles();
-
-// Select default category
+// Inicializar partículas cuando se carga la página
 window.addEventListener('DOMContentLoaded', () => {
+    createParticles();
     categoryButtons[0].classList.add('selected');
 });
 
@@ -204,7 +255,7 @@ newGameBtn.addEventListener('click', () => {
     backBtn.classList.add('hidden');
 });
 
-// Back button - FIXED IMPLEMENTATION
+// Back button
 backBtn.addEventListener('click', goToStartScreen);
 
 function goToStartScreen() {
@@ -256,7 +307,7 @@ function startGame() {
 
     startScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
-    backBtn.classList.remove('hidden'); // Show back button in game
+    backBtn.classList.remove('hidden');
 
     startTimer();
 
@@ -278,7 +329,7 @@ function restartGame() {
 
     resultsScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
-    backBtn.classList.remove('hidden'); // Show back button when restarting
+    backBtn.classList.remove('hidden');
 
     startTimer();
 
@@ -401,10 +452,6 @@ function endGame() {
 
     gameScreen.classList.add('hidden');
     resultsScreen.classList.remove('hidden');
-    backBtn.classList.remove('hidden'); // Show back button in results
+    backBtn.classList.remove('hidden');
 }
 
-// // Llamar la función cuando se carga la página
-// window.addEventListener('DOMContentLoaded', () => {
-//     createRetroParticles();
-// });
